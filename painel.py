@@ -9,12 +9,11 @@ from faker import Faker
 from validate_docbr import CPF
 import random
 
-# ======= CONFIG =======
+# ======= CONFIGURAÇÃO =======
 api_id = 24344843
 api_hash = '810897451143f53c4a437765a6eae76c'
 session_name = 'session'
-grupo = '@GOLDSPACEOFC'
-thread_id = 19423
+grupo = '@DBSPUXADASFREE'
 
 client = TelegramClient(session_name, api_id, api_hash)
 console = Console()
@@ -74,61 +73,45 @@ titulo = "[bold red]╔═╦═╦═╦═╦═╦═╦═╦═╦═╦═
 async def enviar_e_receber(comando, dado):
     msg_enviada = await client.send_message(
         entity=grupo,
-        message=f"{comando} {dado}",
-        reply_to=thread_id
+        message=f"{comando} {dado}"
     )
 
     await asyncio.sleep(10)
     me = await client.get_me()
     mensagens = await client.get_messages(grupo, limit=20)
 
-    # CPF: botão CPF | COMPLETO
+    # CPF → CREDLINK
     if comando == "/cpf":
         for msg in mensagens:
             if msg.reply_to_msg_id == msg_enviada.id and msg.buttons:
                 for row in msg.buttons:
                     for btn in row:
-                        if "CPF | COMPLETO" in btn.text.upper():
+                        if "CREDLINK" in btn.text.upper():
                             await msg.click(text=btn.text)
                             await asyncio.sleep(10)
                             respostas = await client.get_messages(grupo, limit=10)
-                            filtradas = [r for r in respostas if r.reply_to_msg_id == msg_enviada.id and r.sender_id != me.id]
-                            for r in filtradas:
-                                if r.file:
-                                    return await tratar_resposta(r)
-                            for r in filtradas:
-                                if r.text:
-                                    return await tratar_resposta(r)
+                            return await filtrar_resposta(respostas, msg_enviada.id, me.id)
 
-    # NOME: botão NOME
-    elif comando == "/nome":
+    # PLACA, NOME, TELEFONE → VOID
+    if comando in ["/placa", "/nome", "/telefone"]:
         for msg in mensagens:
             if msg.reply_to_msg_id == msg_enviada.id and msg.buttons:
                 for row in msg.buttons:
                     for btn in row:
-                        if "NOME" in btn.text.upper():
+                        if "VOID" in btn.text.upper():
                             await msg.click(text=btn.text)
                             await asyncio.sleep(10)
                             respostas = await client.get_messages(grupo, limit=10)
-                            filtradas = [r for r in respostas if r.reply_to_msg_id == msg_enviada.id and r.sender_id != me.id]
-                            for r in filtradas:
-                                if r.file:
-                                    return await tratar_resposta(r)
-                            for r in filtradas:
-                                if r.text:
-                                    return await tratar_resposta(r)
+                            return await filtrar_resposta(respostas, msg_enviada.id, me.id)
 
-    # Respostas padrão
-    respostas_validas = [
-        msg for msg in mensagens
-        if msg.reply_to_msg_id == msg_enviada.id and msg.sender_id != me.id
-    ]
+    return await filtrar_resposta(mensagens, msg_enviada.id, me.id)
 
-    for msg in respostas_validas:
-        if msg.file:
+async def filtrar_resposta(mensagens, reply_id, my_id):
+    for msg in mensagens:
+        if msg.reply_to_msg_id == reply_id and msg.file and msg.file.name and msg.file.name.endswith('.txt') and msg.sender_id != my_id:
             return await tratar_resposta(msg)
-    for msg in respostas_validas:
-        if msg.text:
+    for msg in mensagens:
+        if msg.reply_to_msg_id == reply_id and msg.text and not msg.file and msg.sender_id != my_id:
             return await tratar_resposta(msg)
 
     console.print("[red]Nenhuma resposta encontrada.")
