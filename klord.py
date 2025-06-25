@@ -1,22 +1,20 @@
-import asyncio, os, random, re, sys, contextlib
+import asyncio, os, random, re
 from telethon.sync import TelegramClient
 from telethon.sessions import StringSession
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
-from rich.align import Align
-from rich import box
 from faker import Faker
 from validate_docbr import CPF
 from datetime import datetime
 
-# ==== CONFIGURAÇÕES ====
+# ==== CONFIG ====
 api_id = 24344843
 api_hash = '810897451143f53c4a437765a6eae76c'
 session_name = 'session'
 grupo = '@DBSPUXADASVIP'
 topico_id = None
-telefone = "+5531987705212"  # coloque o seu número aqui
+telefone = "+5531987705212"
 
 client = TelegramClient(session_name, api_id, api_hash)
 console = Console()
@@ -39,93 +37,60 @@ comandos = {
     "14": "/bin"
 }
 
-menu_texto = """\
-╔══════════════════════════════╗
-║        🔎 KLORD PAINEL       ║
-╠══════════════════════════════╣
-║ [01] 👤 CPF                  ║
-║ [02] 🪪 RG                    ║ 
-║ [03] 👤 NOME                 ║
-║ [04] 🚘 PLACA                ║
-║ [05] 👩‍❤️‍👨 MÃE               ║
-║ [06] 🏢 CNPJ                 ║
-║ [07] 🩺 CNS                  ║
-║ [08] 📌 PIS                  ║
-║ [09] 💰 PIX                  ║
-║ [10] 📞 TELEFONE             ║
-║ [11] 👨 PAI                  ║
-║ [12] 🗳️ TÍTULO                ║
-║ [13] 🧾 NIS                  ║
-║ [14] 💳 BIN                  ║
-╠══════════════════════════════╣
-║ [00] ❌ SAIR                 ║
-╚══════════════════════════════╝
-"""
+emoji_grupo_1 = {
+    "CPF", "NOME", "SEXO", "NASCIMENTO", "NOME MÃE", "NOME PAI",
+    "MUNICÍPIO DE NASCIMENTO", "RAÇA", "TIPO SANGÚINEO", "RG",
+    "RENDA", "SCORE", "ESTADO CIVIL", "ÓBITO"
+}
 
-def mostrar_menu():
-    os.system('cls' if os.name == 'nt' else 'clear')
+emoji_grupo_2 = {"STATUS NA RECEITA", "RECEBE INSS", "PIS", "NIS", "CNS"}
+emoji_grupo_3 = {"CLASSE SOCIAL", "ESCOLARIDADE", "PROFISSÃO"}
 
-    painel = Panel(
-        Align.center(menu_texto, vertical="middle"),
-        title="[bold bright_green]🔎 KLORD PAINEL 🔎[/bold bright_green]",
-        border_style="bright_green",
-        width=90,  # largura maior
-        padding=(3, 8),  # espaço interno maior (topo/baixo, esquerda/direita)
-        box=box.DOUBLE
-    )
+emojis = {
+    "👤": emoji_grupo_1,
+    "📊": emoji_grupo_2,
+    "📚": emoji_grupo_3
+}
 
-    print("\n" * 15)  # muitas linhas em branco antes para centralizar verticalmente
-    console.print(Align.center(painel))
-    print("\n" * 15)  # muitas linhas em branco depois
+blocos = {
+    "EMPRESAS": "🏢",
+    "EMAILS": "✉️",
+    "TELEFONES": "☎️",
+    "BANCOS": "🏦",
+    "EMPREGOS": "💼",
+    "PARENTES": "👥",
+    "VEICULOS": "🚗",
+    "ENDERECOS": "🏡",
+    "INTERESSES PESSOAIS": "📦"
+}
 
 def formatar_resposta(conteudo):
     linhas = conteudo.splitlines()
     resultado = []
-
-    emojis = {
-        "CPF": "👤", "NOME": "👤", "NASCIMENTO": "👤", "SEXO": "👤",
-        "NOME MÃE": "👤", "NOME PAI": "👤", "MUNICÍPIO DE NASCIMENTO": "🌍",
-        "RAÇA": "🌈", "TIPO SANGÚINEO": "🩸", "RG": "🪪",
-        "RENDA": "💰", "SCORE": "📊", "ESTADO CIVIL": "💍",
-        "ÓBITO": "⚰️", "STATUS NA RECEITA": "", "RECEBE INSS": "",
-        "PIS": "", "NIS": "", "CNS": "💳", "CLASSE SOCIAL": "🏷️",
-        "ESCOLARIDADE": "🎓", "PROFISSÃO": "🧑‍💼",
-        "EMPRESAS": "🏢", "EMAILS": "✉️", "TELEFONES": "☎️",
-        "BANCOS": "🏦", "EMPREGOS": "💼", "PARENTES": "👥",
-        "VEICULOS": "🚗", "ENDERECOS": "🏡", "INTERESSES PESSOAIS": "📦"
-    }
+    bloco_atual = ""
 
     for linha in linhas:
-        linha_strip = linha.strip()
-
-        if not linha_strip or "t.me/" in linha_strip or "@QueryBuscasBot" in linha_strip:
+        linha = linha.strip()
+        if not linha or "@" in linha or "http" in linha:
             continue
 
-        if "⎯" in linha_strip:
-            chave, valor = map(str.strip, linha_strip.split("⎯", 1))
-            emoji = emojis.get(chave.upper(), "🔹")
-            resultado.append(f"{emoji}{chave.upper()}: {valor}")
-            continue
-
-        if linha_strip.startswith("•"):
-            resultado.append(f"   • {linha_strip[1:].strip()}")
-            continue
-
-        if linha_strip.startswith("- "):
-            resultado.append(f"     - {linha_strip[2:].strip()}")
-            continue
-
-        if ':' in linha_strip:
-            chave, valor = map(str.strip, linha_strip.split(':', 1))
-            chave_upper = chave.upper()
-            emoji = emojis.get(chave_upper, "🔹")
-            if emoji:
-                resultado.append(f"{emoji}{chave_upper}: {valor}")
-            else:
-                resultado.append(f"{chave_upper}: {valor}")
-            continue
-
-        resultado.append(linha_strip)
+        if "⎯" in linha:
+            chave, valor = map(str.strip, linha.split("⎯", 1))
+            emoji = next((e for e, campos in emojis.items() if chave.upper() in campos), "📦")
+            resultado.append(f"{emoji} {chave.upper()}: {valor}")
+        elif any(linha.startswith(k + ":") for k in blocos):
+            chave_bloco = linha.split(":")[0]
+            bloco_atual = chave_bloco.upper()
+            resultado.append(f"\n{blocos.get(bloco_atual, '📦')} {bloco_atual}:")
+        elif linha.startswith("•"):
+            resultado.append(f"• {linha[1:].strip()}")
+        elif linha.startswith("-"):
+            resultado.append(f"🔹 {linha[1:].strip()}")
+        elif re.match(r"^[A-Z ]+: .*", linha):
+            chave = linha.split(":")[0].strip()
+            valor = ":".join(linha.split(":")[1:]).strip()
+            emoji = next((e for e, campos in emojis.items() if chave.upper() in campos), "📦")
+            resultado.append(f"{emoji} {chave.upper()}: {valor}")
 
     return '\n'.join(resultado)
 
@@ -151,24 +116,14 @@ async def tratar_resposta(msg):
         path = await msg.download_media()
         with open(path, 'r', encoding='utf-8', errors='ignore') as f:
             conteudo = ''.join(f.readlines())
-            resposta_formatada = formatar_resposta(conteudo)
-            console.print(Panel(resposta_formatada.strip(), title="Consulta Formatada", subtitle="KLORD VIP"))
-            with open("buscas_log.txt", "a", encoding="utf-8") as log:
-                log.write(f"\n[{datetime.now()}]\n{conteudo}\n")
         os.remove(path)
-    elif msg.text:
+    else:
         conteudo = msg.text
-        resposta_formatada = formatar_resposta(conteudo)
-        console.print(Panel(resposta_formatada.strip(), title="Consulta Formatada", subtitle="KLORD VIP"))
 
-    # Clicar no botão apagar, se existir
-    if msg.buttons:
-        for row in msg.buttons:
-            for button in row:
-                if hasattr(button, 'text') and button.text.lower() == "apagar":
-                    await msg.click(text=button.text)
-                    break
-
+    resposta_formatada = formatar_resposta(conteudo)
+    console.print(Panel(resposta_formatada.strip(), title="Consulta KLORD", subtitle="KLORD VIP"))
+    with open("buscas_log.txt", "a", encoding="utf-8") as log:
+        log.write(f"\n[{datetime.now()}]\n{conteudo}\n")
     input("\nPressione ENTER para voltar ao menu...")
 
 def gerar_pessoa():
@@ -192,21 +147,37 @@ def gerar_gg():
         log.write(f"\n[{datetime.now()}] GG Gerado: {gg}\n")
     input("\nPressione ENTER para voltar ao menu...")
 
-@contextlib.contextmanager
-def suppress_stdout():
-    with open(os.devnull, "w") as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
-        try:
-            yield
-        finally:
-            sys.stdout = old_stdout
-
 async def main():
-    with suppress_stdout():  # suprime mensagens do Telethon
-        await client.start(phone=telefone, code_callback=lambda: Prompt.ask("🔐 INSIRA O CÓDIGO:"))
+    await client.start(phone=telefone, code_callback=lambda: Prompt.ask("🔐 INSIRA O CÓDIGO:"))
     while True:
-        mostrar_menu()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        menu = """
+============ KLORD PAINEL ============
+
+-- CONSULTAS:
+[1] CPF
+[2] RG
+[3] NOME
+[4] PLACA
+[5] MÃE
+[6] CNPJ
+[7] CNS
+[8] PIS
+[9] PIX
+[10] TELEFONE
+[11] PAI
+[12] TÍTULO
+[13] NIS
+[14] BIN
+
+-- UTILIDADES:
+[98] GERAR PESSOA
+[99] GERAR GG
+
+-- SISTEMA:
+[00] SAIR
+"""
+        console.print(menu, style="bold cyan")
         opcao = Prompt.ask("[bold yellow]Escolha uma opção").strip()
 
         if opcao == "00":
