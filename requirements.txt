@@ -1,0 +1,6 @@
+telethon
+rich
+faker
+validate-docbr
+requests
+beautifulsoup4
