@@ -14,7 +14,7 @@ api_hash = '810897451143f53c4a437765a6eae76c'
 session_name = 'session'
 grupo = '@DBSPUXADASVIP'
 topico_id = None
-telefone = "+5531987705212"
+telefone = "+5515998519942"
 
 client = TelegramClient(session_name, api_id, api_hash)
 console = Console()
