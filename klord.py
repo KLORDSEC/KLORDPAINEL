@@ -174,10 +174,10 @@ async def main():
 ║  [10] TELEFONE      [11] PAI         [12] TÍTULO         ║
 ║  [13] NIS           [14] BIN         [15] CHASSI         ║
 ║  [16] MOTOR         [17] RENAVAM     [18] CEP (VIZINHOS) ║
-║  [19] EMAIL                                           ║
+║  [19] EMAIL                                              ║
 ║                                                          ║
 ║  [98] GERAR PESSOA       [99] GERAR GG                   ║
-║  [00] SAIR                                             ║
+║  [00] SAIR                                               ║
 ╚══════════════════════════════════════════════════════════╝
 """
         console.print(ascii_art, style="bold red")
