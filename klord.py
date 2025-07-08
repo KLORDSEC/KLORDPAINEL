@@ -21,35 +21,27 @@ console = Console()
 fake = Faker('pt_BR')
 
 comandos = {
-    "1": "/cpf",
-    "2": "/rg",
-    "3": "/nome",
-    "4": "/placa",
-    "5": "/mae",
-    "6": "/cnpj",
-    "7": "/cns",
-    "8": "/pis",
-    "9": "/pix",
-    "10": "/telefone",
-    "11": "/pai",
-    "12": "/titulo",
-    "13": "/nis",
-    "14": "/bin"
+    "1": "/cpf",       "2": "/rg",         "3": "/nome",
+    "4": "/placa",     "5": "/mae",        "6": "/cnpj",
+    "7": "/cns",       "8": "/pis",        "9": "/pix",
+    "10": "/telefone", "11": "/pai",       "12": "/titulo",
+    "13": "/nis",      "14": "/bin",       "15": "/chassi",
+    "16": "/motor",    "17": "/renavam",   "18": "/cep",
+    "19": "/email"
 }
-
-emoji_grupo_1 = {
-    "CPF", "NOME", "SEXO", "NASCIMENTO", "NOME MÃE", "NOME PAI",
-    "MUNICÍPIO DE NASCIMENTO", "RAÇA", "TIPO SANGÚINEO", "RG",
-    "RENDA", "SCORE", "ESTADO CIVIL", "ÓBITO"
-}
-
-emoji_grupo_2 = {"STATUS NA RECEITA", "RECEBE INSS", "PIS", "NIS", "CNS"}
-emoji_grupo_3 = {"CLASSE SOCIAL", "ESCOLARIDADE", "PROFISSÃO"}
 
 emojis = {
-    "👤": emoji_grupo_1,
-    "📊": emoji_grupo_2,
-    "📚": emoji_grupo_3
+    "👤": {
+        "CPF", "NOME", "SEXO", "NASCIMENTO", "NOME MÃE", "NOME PAI",
+        "MUNICÍPIO DE NASCIMENTO", "RAÇA", "TIPO SANGÚINEO", "RG",
+        "RENDA", "SCORE", "ESTADO CIVIL", "ÓBITO"
+    },
+    "📊": {
+        "STATUS NA RECEITA", "RECEBE INSS", "PIS", "NIS", "CNS"
+    },
+    "📚": {
+        "CLASSE SOCIAL", "ESCOLARIDADE", "PROFISSÃO"
+    }
 }
 
 blocos = {
@@ -103,10 +95,7 @@ async def enviar_e_receber(comando, dado):
 
 async def filtrar_resposta(mensagens, reply_id, my_id):
     for msg in mensagens:
-        if msg.reply_to_msg_id == reply_id and msg.file and msg.file.name.endswith('.txt') and msg.sender_id != my_id:
-            return await tratar_resposta(msg)
-    for msg in mensagens:
-        if msg.reply_to_msg_id == reply_id and msg.text and msg.sender_id != my_id:
+        if msg.reply_to_msg_id == reply_id and (msg.file or msg.text) and msg.sender_id != my_id:
             return await tratar_resposta(msg)
     console.print("[red]❌ Nenhuma resposta encontrada.")
     input("\nPressione ENTER para voltar ao menu...")
@@ -121,7 +110,7 @@ async def tratar_resposta(msg):
         conteudo = msg.text
 
     resposta_formatada = formatar_resposta(conteudo)
-    console.print(Panel(resposta_formatada.strip(), title="Consulta KLORD", subtitle="KLORD VIP"))
+    console.print(Panel(resposta_formatada.strip(), title="CONSULTA KLORD", subtitle="KLORD VIP", border_style="red"))
     with open("buscas_log.txt", "a", encoding="utf-8") as log:
         log.write(f"\n[{datetime.now()}]\n{conteudo}\n")
     input("\nPressione ENTER para voltar ao menu...")
@@ -151,32 +140,47 @@ async def main():
     await client.start(phone=telefone, code_callback=lambda: Prompt.ask("🔐 INSIRA O CÓDIGO:"))
     while True:
         os.system('cls' if os.name == 'nt' else 'clear')
-        menu = """
-============ KLORD PAINEL ============
 
--- CONSULTAS:
-[1] CPF
-[2] RG
-[3] NOME
-[4] PLACA
-[5] MÃE
-[6] CNPJ
-[7] CNS
-[8] PIS
-[9] PIX
-[10] TELEFONE
-[11] PAI
-[12] TÍTULO
-[13] NIS
-[14] BIN
+        ascii_art = """
+             ________________________________________________
+            /                                                \\
+           |    _________________________________________     |
+           |   |                                         |    |
+           |   |  C:\\> _                                 |    |
+           |   |                                         |    |
+           |   |                                         |    |
+           |   |                                         |    |
+           |   |_________________________________________|    |
+           |                                                  |
+            \\_________________________________________________/
+                   \\___________________________________/
+                ___________________________________________
+             _-'    .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.  --- `-_
+          _-'.-.-. .---.-.-.-.-.-.-.-.-.-.-.-.-.-.-.--.  .-.-.`-_
+       _-'.-.-.-. .---.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-`__`. .-.-.-.`-_
+    _-'.-.-.-.-. .-----.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-----. .-.-.-.-.`-_
+ _-'.-.-.-.-.-. .---.-. .-------------------------. .-.---. .---.-.-.-.`-_
+:-------------------------------------------------------------------------:
+`---._.-------------------------------------------------------------._.---'
+                              -KLORD MALWARE-
+        """
 
--- UTILIDADES:
-[98] GERAR PESSOA
-[99] GERAR GG
-
--- SISTEMA:
-[00] SAIR
+        menu = f"""
+╔══════════════════════[ KLORDPAINEL ]══════════════════════╗
+║                                                          ║
+║  [01] CPF           [02] RG          [03] NOME           ║
+║  [04] PLACA         [05] MÃE         [06] CNPJ           ║
+║  [07] CNS           [08] PIS         [09] PIX            ║
+║  [10] TELEFONE      [11] PAI         [12] TÍTULO         ║
+║  [13] NIS           [14] BIN         [15] CHASSI         ║
+║  [16] MOTOR         [17] RENAVAM     [18] CEP (VIZINHOS) ║
+║  [19] EMAIL                                           ║
+║                                                          ║
+║  [98] GERAR PESSOA       [99] GERAR GG                   ║
+║  [00] SAIR                                             ║
+╚══════════════════════════════════════════════════════════╝
 """
+        console.print(ascii_art, style="bold red")
         console.print(menu, style="bold cyan")
         opcao = Prompt.ask("[bold yellow]Escolha uma opção").strip()
 
